@@ -5,3 +5,7 @@ Credit to https://github.com/GerbenJavado/LinkFinder for the idea and regex
 
 #  Screenshot
 ![](https://i.imgur.com/DfzweE9.png)
+
+## To-Do
+- Add threading for scanner
+- Add blacklist for known JS files e.g. jquery etc.
