@@ -21,9 +21,9 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
         self.helpers = callbacks.getHelpers()
-        callbacks.setExtensionName("BurpLinkFinder")
+        callbacks.setExtensionName("BurpJSLinkFinder")
 
-        callbacks.issueAlert("BurpLinkFinder Passive Scanner enabled")
+        callbacks.issueAlert("BurpJSLinkFinder Passive Scanner enabled")
 
         stdout = PrintWriter(callbacks.getStdout(), True)
         stderr = PrintWriter(callbacks.getStderr(), True)
