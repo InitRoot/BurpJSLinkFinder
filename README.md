@@ -12,6 +12,7 @@ before installing.
 Once you've loaded the plugin there is some things to consider.
 Burp performs threading on passive scanning by itself. This can be controlled by looking at the Scanner options.
 For quick scanning I make use of the following settings with this plugin:
+
 Scanner --> Live Scanning
  - Live Active Scanning : Disabled
  - Live Passive Scanning : Use suite scope
