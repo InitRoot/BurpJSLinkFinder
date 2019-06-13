@@ -1,6 +1,8 @@
 #  BurpJSLinkFinder - Find links within JS files.
-Burp Extension for a passive scanning JS files for endpoint links.
+Burp Extension for a passive scanning JS files for endpoint links. The extension includes the ability to exclude some files based on keywords for example jquery.js or google-analytics js files.
 Copyright (c) 2019 Frans Hendrik Botes
+
+
 Credit to https://github.com/GerbenJavado/LinkFinder for the idea and regex
 
 ## Setup
@@ -28,6 +30,8 @@ Scanner --> Live Scanning
  - Live Passive Scanning : Use suite scope
  
  As with ALL the burp scanner items, you have to give it a minute or so to work through the data. You shouldn't be waiting several minutes for a result tho.
+ 
+ If the links have been excluded monitor the OUTPUT of the extension under the Extender options to verify.
 
 
 ##  Screenshot
