@@ -7,6 +7,16 @@ Credit to https://github.com/GerbenJavado/LinkFinder for the idea and regex
 For use with the professional version of Burp Suite. Ensure you have JPython loaded and setup
 before installing.
 
+You can modify the exclusion list by updating the strings on line 33.
+Currently any strings that include the included words will not be analysed.
+
+```
+# Needed params
+
+JSExclusionList = ['jquery', 'google-analytics','gpt.js']
+
+```
+
 ## Usage
 
 Once you've loaded the plugin there is some things to consider.
@@ -23,5 +33,6 @@ Scanner --> Live Scanning
 ##  Screenshot
 ![](https://i.imgur.com/KnmJrp1.gif)
 
-## To-Do
-- Add blacklist for known JS files e.g. jquery etc.
+## Update
+- Added swing memory management 
+- Added exclusion list on line 33 of code ['jquery', 'google-analytics','gpt.js']
