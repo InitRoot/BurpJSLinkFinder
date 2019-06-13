@@ -28,6 +28,9 @@ class Run(Runnable):
     def run(self):
         self.runner()
 
+# Needed params
+
+JSExclusionList = ['jquery', 'google-analytics','gpt.js']
 
 class BurpExtender(IBurpExtender, IScannerCheck, ITab):
     def registerExtenderCallbacks(self, callbacks):
@@ -98,20 +101,28 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
     def clearLog(self, event):
           self.outputTxtArea.setText("Burp JS LinkFinder loaded." + "\n" + "Copyright (c) 2019 Frans Hendrik Botes" + "\n" )
 
+    
     def doPassiveScan(self, ihrr):
+        
         try:
-            url = ihrr.getUrl()
+            urlReq = ihrr.getUrl()
+            testString = str(urlReq)
             linkA = linkAnalyse(ihrr,self.helpers)
-            if ".js" in str(url):
-                self.outputTxtArea.append("\n" + "[+] Valid URL found: " + str(url))
-                issueText = linkA.analyseURL()
-                for counter, issueText in enumerate(issueText):
-                        #print("TEST Value returned SUCCESS")
-                        self.outputTxtArea.append("\n" + "\t" + str(counter)+' - ' +issueText['link'])   
+            # check if JS file
+            if ".js" in str(urlReq):
+                # Exclude casual JS files
+                if any(x in testString for x in JSExclusionList):
+                    print("\n" + "[-] URL excluded " + str(urlReq))
+                else:
+                    self.outputTxtArea.append("\n" + "[+] Valid URL found: " + str(urlReq))
+                    issueText = linkA.analyseURL()
+                    for counter, issueText in enumerate(issueText):
+                            #print("TEST Value returned SUCCESS")
+                            self.outputTxtArea.append("\n" + "\t" + str(counter)+' - ' +issueText['link'])   
 
-                issues = ArrayList()
-                issues.add(SRI(ihrr, self.helpers))
-                return issues
+                    issues = ArrayList()
+                    issues.add(SRI(ihrr, self.helpers))
+                    return issues
         except UnicodeEncodeError:
             print ("Error in URL decode.")
         return None
