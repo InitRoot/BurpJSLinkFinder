@@ -16,6 +16,18 @@ from javax import swing
 from java.awt import Font, Color
 from threading import Thread
 from array import array
+from java.awt import EventQueue
+from java.lang import Runnable
+from thread import start_new_thread
+
+# Using the Runnable class for thread-safety with Swing
+class Run(Runnable):
+    def __init__(self, runner):
+        self.runner = runner
+
+    def run(self):
+        self.runner()
+
 
 class BurpExtender(IBurpExtender, IScannerCheck, ITab):
     def registerExtenderCallbacks(self, callbacks):
@@ -108,6 +120,9 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
     def consolidateDuplicateIssues(self, isb, isa):
         return -1
 
+    def extensionUnloaded(self):
+        print "Burp JS LinkFinder unloaded"
+        return
 
 class linkAnalyse():
     
@@ -177,8 +192,14 @@ class linkAnalyse():
                 filtered_items.append(item)
         return filtered_items
 
+    # Potential for use in the future...
+    def threadAnalysis(self):
+        thread = Thread(target=self.analyseURL(), args=(session,))
+        thread.daemon = True
+        thread.start()
 
     def analyseURL(self):
+        
         endpoints = ""
         #print("TEST AnalyseURL #1")
         mime_type=self.helpers.analyzeResponse(self.reqres.getResponse()).getStatedMimeType()
@@ -243,4 +264,5 @@ class SRI(IScanIssue,ITab):
         return self.reqres.getHttpService()
         
         
-  
+if __name__ in ('__main__', 'main'):
+    EventQueue.invokeLater(Run(BurpExtender))
