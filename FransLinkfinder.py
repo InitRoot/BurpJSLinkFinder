@@ -19,6 +19,7 @@ from array import array
 from java.awt import EventQueue
 from java.lang import Runnable
 from thread import start_new_thread
+from javax.swing import JFileChooser
 
 # Using the Runnable class for thread-safety with Swing
 class Run(Runnable):
@@ -63,6 +64,10 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
         self.outputTxtArea.setLineWrap(True)
         self.logPane.setViewportView(self.outputTxtArea)
         self.clearBtn = swing.JButton("Clear Log", actionPerformed=self.clearLog)
+        self.exportBtn = swing.JButton("Export Log", actionPerformed=self.exportLog)
+        self.parentFrm = swing.JFileChooser()
+
+
 
         # Layout
         layout = swing.GroupLayout(self.tab)
@@ -77,6 +82,7 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
                     .addComponent(self.outputLabel)
                     .addComponent(self.logPane)
                     .addComponent(self.clearBtn)
+                    .addComponent(self.exportBtn)
                 )
             )
         )
@@ -88,6 +94,7 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
                     .addComponent(self.outputLabel)
                     .addComponent(self.logPane)
                     .addComponent(self.clearBtn)
+                    .addComponent(self.exportBtn)
                 )
             )
         )
@@ -100,6 +107,13 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
 
     def clearLog(self, event):
           self.outputTxtArea.setText("Burp JS LinkFinder loaded." + "\n" + "Copyright (c) 2019 Frans Hendrik Botes" + "\n" )
+
+    def exportLog(self, event):
+        chooseFile = JFileChooser()
+        ret = chooseFile.showDialog(self.logPane, "Choose file")
+        filename = chooseFile.getSelectedFile().getCanonicalPath()
+        print("\n" + "Export to : " + filename)
+        open(filename, 'w', 0).write(self.outputTxtArea.text)
 
     
     def doPassiveScan(self, ihrr):
