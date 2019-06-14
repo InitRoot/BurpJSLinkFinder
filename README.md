@@ -1,5 +1,8 @@
 #  BurpJSLinkFinder - Find links within JS files.
-Burp Extension for a passive scanning JS files for endpoint links. The extension includes the ability to exclude some files based on keywords for example jquery.js or google-analytics js files.
+Burp Extension for a passive scanning JS files for endpoint links. 
+ - Export results the log
+ - Exclude specific 'js' files e.g. jquery, google-analytics
+ 
 Copyright (c) 2019 Frans Hendrik Botes
 
 
@@ -38,5 +41,6 @@ Scanner --> Live Scanning
 ![](https://i.imgur.com/KnmJrp1.gif)
 
 ## Update
-- Added swing memory management 
-- Added exclusion list on line 33 of code ['jquery', 'google-analytics','gpt.js']
+- Added swing memory management  (14/06/2019)
+- Added exclusion list on line 33 of code ['jquery', 'google-analytics','gpt.js'] (14/06/2019)
+- Added ability to export files (15/06/2019)
