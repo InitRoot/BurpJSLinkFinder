@@ -1,3 +1,6 @@
+##  Disclaimer
+I take not responsibility for your use of the software. Development is done in my personal capacity and carry no affiliation to my work.
+
 #  BurpJSLinkFinder - Find links within JS files.
 Burp Extension for a passive scanning JS files for endpoint links. 
  - Export results the text file
