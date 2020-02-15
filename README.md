@@ -2,6 +2,10 @@
 I take not responsibility for your use of the software. Development is done in my personal capacity and carry no affiliation to my work.
 
 #  BurpJSLinkFinder - Find links within JS files.
+[![Follow on Twitter](https://img.shields.io/twitter/follow/initroott?label=Follow%20&style=social)
+![GitHub last commit](https://img.shields.io/github/last-commit/initroot/BurpJSLinkFinder)
+![GitHub stars](https://img.shields.io/github/stars/initroot/BurpJSLinkFinder)
+
 Burp Extension for a passive scanning JS files for endpoint links. 
  - Export results the text file
  - Exclude specific 'js' files e.g. jquery, google-analytics
