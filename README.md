@@ -3,6 +3,7 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/initroot/BurpJSLinkFinder)
 ![GitHub stars](https://img.shields.io/github/stars/initroot/BurpJSLinkFinder)
 
+
 Burp Extension for a passive scanning JS files for endpoint links. 
  - Export results the text file
  - Exclude specific 'js' files e.g. jquery, google-analytics
@@ -35,7 +36,7 @@ Instructions based on the most recent versions of Burp. The following configurat
 - Set scanners to only scan scoped items e.g. Dashboard --> Live scanner and Live audit set URL Scope to Suite Scope
 
 ##  Screenshot
-![](https://i.imgur.com/s9fPI5A.mp4)
+![Screen Recording 2021-12-31 at 10 43 36](https://user-images.githubusercontent.com/954507/147813394-50564827-d017-446d-8bdc-b21022da2114.gif)
 
 ## Update
 - Added swing memory management  (14/06/2019)
