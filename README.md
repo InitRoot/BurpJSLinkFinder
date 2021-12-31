@@ -35,7 +35,7 @@ Instructions based on the most recent versions of Burp. The following configurat
 - Set scanners to only scan scoped items e.g. Dashboard --> Live scanner and Live audit set URL Scope to Suite Scope
 
 ##  Screenshot
-![](https://i.imgur.com/KnmJrp1.gif)
+![](https://i.imgur.com/s9fPI5A.mp4)
 
 ## Update
 - Added swing memory management  (14/06/2019)
