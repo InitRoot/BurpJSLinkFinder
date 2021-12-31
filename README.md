@@ -7,7 +7,7 @@ Burp Extension for a passive scanning JS files for endpoint links.
  - Export results the text file
  - Exclude specific 'js' files e.g. jquery, google-analytics
  
-Copyright (c) 2019 Frans Hendrik Botes
+Copyright (c) 2022 Frans Hendrik Botes
 
 
 Credit to https://github.com/GerbenJavado/LinkFinder for the idea and regex
@@ -19,30 +19,20 @@ I take not responsibility for your use of the software. Development is done in m
 For use with the professional version of Burp Suite. Ensure you have JPython loaded and setup
 before installing.
 
-You can modify the exclusion list by updating the strings on line 33.
+You can modify the exclusion list by updating the strings on line 50.
 Currently any strings that include the included words will not be analysed.
 
 ```
 # Needed params
 
-JSExclusionList = ['jquery', 'google-analytics','gpt.js']
+JSExclusionList = ['jquery', 'google-analytics','gpt.js','modernizr','gtm','fbevents']
 
 ```
 
 ## Usage
-
-Once you've loaded the plugin there is some things to consider.
-Burp performs threading on passive scanning by itself. This can be controlled by looking at the Scanner options.
-For quick scanning I make use of the following settings with this plugin:
-
-Scanner --> Live Scanning
- - Live Active Scanning : Disabled
- - Live Passive Scanning : Use suite scope
- 
- As with ALL the burp scanner items, you have to give it a minute or so to work through the data. You shouldn't be waiting several minutes for a result tho.
- 
- If the links have been excluded monitor the OUTPUT of the extension under the Extender options to verify.
-
+Instructions based on the most recent versions of Burp. The following configurations are advised:
+- Set target scope under Target --> Scope --> Advance scope --> Keyword
+- Set scanners to only scan scoped items e.g. Dashboard --> Live scanner and Live audit set URL Scope to Suite Scope
 
 ##  Screenshot
 ![](https://i.imgur.com/KnmJrp1.gif)
@@ -51,3 +41,6 @@ Scanner --> Live Scanning
 - Added swing memory management  (14/06/2019)
 - Added exclusion list on line 33 of code ['jquery', 'google-analytics','gpt.js'] (14/06/2019)
 - Added ability to export files (15/06/2019)
+- Added filename extracter pane (31/12/2021)
+- Added URL mapper, very basic at this time (31/12/2021)
+- Minor cosmetic changes on the log for quicker copy paste (31/12/2021)
