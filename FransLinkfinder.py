@@ -12,6 +12,7 @@ from java.util.regex import Matcher, Pattern
 import binascii
 import base64
 import re
+import cgi
 from os import path
 from javax import swing
 from java.awt import Font, Color
@@ -241,12 +242,14 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
                 else:
                     self.outputTxtArea.append("\n" + "[+] Valid URL found: " + str(urlReq))
                     issueText = linkA.analyseURL()
+                    links = []
                     for counter, issueText in enumerate(issueText):
                             self.outputTxtArea.append("\n" + "\t" + issueText['link'])
-                            if linkA.valcheckUrl(issueText['link']):
+                            if linkA.valcheckUrl(issueText['link'],self.mapTxtArea):
                                 fullURL = urlparse.urljoin(str(urlReq), '/') + issueText['link']
                                 
                                 self.mapTxtArea.append("\n" + fullURL)
+                                links += [fullURL]
                             filNam = os.path.basename(issueText['link'])
                             if linkA.isNotBlank((filNam)):
                                 try:
@@ -258,7 +261,8 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
                                     self.filesTxtArea.append("\n" + filNam)
                             
                     issues = ArrayList()
-                    issues.add(SRI(ihrr, self.helpers))
+                    if links != []:
+                            issues.add(SRI(ihrr, self.helpers, links))
                     return issues
         except UnicodeEncodeError:
             print ("Error in URL decode.")
@@ -460,7 +464,7 @@ class linkAnalyse():
 
             return False
 
-    def valcheckUrl(self,myString):
+    def valcheckUrl(self,myString,mapTxtArea):
         #Checks if the extracted URL is a full URL or if already in the mapped list
         #print("Checking URL: " + myString)
         try:
@@ -476,9 +480,10 @@ class linkAnalyse():
         return True
 
 class SRI(IScanIssue,ITab):
-    def __init__(self, reqres, helpers):
+    def __init__(self, reqres, helpers, links):
         self.helpers = helpers
         self.reqres = reqres
+        self.links = links
 
     def getHost(self):
         return self.reqres.getHost()
@@ -508,11 +513,16 @@ class SRI(IScanIssue,ITab):
         return str("JS files holds links to other parts of web applications. Refer to TAB for results.")
 
     def getRemediationBackground(self):
-        return "This is an <b>informational</b> finding only.<br>"
+        return None
 
     def getIssueDetail(self):
-        return str("Burp Scanner has analysed the following JS file for links: <b>"
-                      "%s</b><br><br>" % (self.reqres.getUrl().toString()))
+    	iss = "Burp Scanner has analysed this JS file and has discovered the following links: <br><ul>\n"
+    	i=0
+    	while i<len(self.links):
+    	    iss += "<li>{}</li>\n".format(cgi.escape(self.links[i]))
+    	    i+=1
+    	iss += "</ul>"
+        return str(iss)
 
     def getRemediationDetail(self):
         return None
