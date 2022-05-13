@@ -33,6 +33,8 @@ from javax.swing import SwingUtilities
 from javax.swing import JTextField
 from javax.swing.table import AbstractTableModel
 import urlparse,threading
+import urllib2
+import ssl
 try: 
     import queue
 except ImportError:
@@ -51,6 +53,8 @@ JSExclusionList = ['jquery', 'google-analytics','gpt.js','modernizr','gtm','fbev
 
 class BurpExtender(IBurpExtender, IScannerCheck, ITab):
     def registerExtenderCallbacks(self, callbacks):
+        # https error
+        ssl._create_default_https_context = ssl._create_unverified_context
         self.callbacks = callbacks
         self.helpers = callbacks.getHelpers()
         callbacks.setExtensionName("BurpJSLinkFinderv2")
@@ -233,6 +237,7 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
             urlReq = ihrr.getUrl()
             testString = str(urlReq)
             linkA = linkAnalyse(ihrr,self.helpers)
+            headers = { 'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36' }
             # check if JS file
             if ".js" in str(urlReq):
                 # Exclude casual JS files
@@ -245,8 +250,13 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
                             self.outputTxtArea.append("\n" + "\t" + issueText['link'])
                             if linkA.valcheckUrl(issueText['link']):
                                 fullURL = urlparse.urljoin(str(urlReq), '/') + issueText['link']
-                                
-                                self.mapTxtArea.append("\n" + fullURL)
+                                # check url status
+                                try:
+                                    req = urllib2.Request(url=str(fullURL),headers=headers)
+                                    res = urllib2.urlopen(req,timeout= 600,context=ssl._create_unverified_context())
+                                    self.mapTxtArea.append("\n" + fullURL+ "\t"+"["+"code:"+str(res.code)+"]")
+                                except Exception,e:
+                                    self.mapTxtArea.append("\n" + fullURL+ "\t"+"["+str(e)+"]")
                             filNam = os.path.basename(issueText['link'])
                             if linkA.isNotBlank((filNam)):
                                 try:
