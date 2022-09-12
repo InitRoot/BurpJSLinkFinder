@@ -249,7 +249,8 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
                                 fullURL = urlparse.urljoin(str(urlReq), '/') + issueText['link']
                                 
                                 self.mapTxtArea.append("\n" + fullURL)
-                                links += [fullURL]
+                                if issueText['link'] not in links:
+                                    links += [issueText['link']]
                             filNam = os.path.basename(issueText['link'])
                             if linkA.isNotBlank((filNam)):
                                 try:
@@ -262,7 +263,7 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
                             
                     issues = ArrayList()
                     if links != []:
-                            issues.add(SRI(ihrr, self.helpers, links))
+                        issues.add(SRI(ihrr, self.helpers, links))
                     return issues
         except UnicodeEncodeError:
             print ("Error in URL decode.")
@@ -484,6 +485,15 @@ class SRI(IScanIssue,ITab):
         self.helpers = helpers
         self.reqres = reqres
         self.links = links
+        self.links.sort()
+        
+        self.issue_detail = "Burp Scanner has analysed this JS file and has discovered the following links: <br><ul>\n"
+        i=0
+    	while i<len(self.links):
+    	    self.issue_detail += "<li>{}</li>\n".format(cgi.escape(self.links[i]))
+    	    i+=1
+    	self.issue_detail += "</ul>"
+    	self.issue_detail = str(self.issue_detail)
 
     def getHost(self):
         return self.reqres.getHost()
@@ -516,13 +526,7 @@ class SRI(IScanIssue,ITab):
         return None
 
     def getIssueDetail(self):
-    	iss = "Burp Scanner has analysed this JS file and has discovered the following links: <br><ul>\n"
-    	i=0
-    	while i<len(self.links):
-    	    iss += "<li>{}</li>\n".format(cgi.escape(self.links[i]))
-    	    i+=1
-    	iss += "</ul>"
-        return str(iss)
+    	return self.issue_detail
 
     def getRemediationDetail(self):
         return None
