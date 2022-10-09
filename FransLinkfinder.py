@@ -17,7 +17,8 @@ from os import path
 from javax import swing
 from java.awt import Font, Color
 from threading import Thread
-from array import array
+#from array import array
+from jarray import array
 from java.awt import EventQueue
 from java.lang import Runnable
 from thread import start_new_thread
@@ -56,8 +57,8 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
         self.helpers = callbacks.getHelpers()
         callbacks.setExtensionName("BurpJSLinkFinderv2")
         callbacks.issueAlert("BurpJSLinkFinderv2 Passive Scanner enabled")
-        stdout = PrintWriter(callbacks.getStdout(), True)
-        stderr = PrintWriter(callbacks.getStderr(), True)
+        #stdout = PrintWriter(callbacks.getStdout(), True)
+        #stderr = PrintWriter(callbacks.getStderr(), True)
         callbacks.registerScannerCheck(self)
         self.threads = []
         self.initUI()
@@ -73,8 +74,8 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
         # add the custom tab to Burp's UI
         callbacks.addSuiteTab(self)
         
-        print ("BurpJS LinkFinder v2 loaded.")
-        print ("Copyright (c) 2022 Frans Hendrik Botes")
+        callbacks.printOutput("BurpJS LinkFinder v2 loaded.")
+        callbacks.printOutput("Copyright (c) 2022 Frans Hendrik Botes")
         self.outputTxtArea.setText("BurpJS LinkFinder loaded." + "\n" + "Copyright (c) 2022 Frans Hendrik Botes" + "\n")
 
     def initUI(self):
@@ -227,30 +228,37 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
         chooseFile = JFileChooser()
         ret = chooseFile.showDialog(self.logPane, "Choose file")
         filename = chooseFile.getSelectedFile().getCanonicalPath()
-        print("\n" + "Export to : " + filename)
+        self.callbacks.printOutput("\n" + "Export to : " + filename)
         open(filename, 'w', 0).write(self.outputTxtArea.text)
     def doPassiveScan(self, ihrr):      
         try:
             urlReq = ihrr.getUrl()
             testString = str(urlReq)
-            linkA = linkAnalyse(ihrr,self.helpers)
+            linkA = linkAnalyse(ihrr,self.callbacks,self.helpers)
             # check if JS file
             if ".js" in str(urlReq):
                 # Exclude casual JS files
                 if any(x in testString for x in JSExclusionList):
-                    print("\n" + "[-] URL excluded " + str(urlReq))
+                    self.callbacks.printOutput("\n" + "[-] URL excluded " + str(urlReq))
                 else:
                     self.outputTxtArea.append("\n" + "[+] Valid URL found: " + str(urlReq))
                     issueText = linkA.analyseURL()
                     links = []
+                    highlights = []
                     for counter, issueText in enumerate(issueText):
                             self.outputTxtArea.append("\n" + "\t" + issueText['link'])
                             if linkA.valcheckUrl(issueText['link'],self.mapTxtArea):
                                 fullURL = urlparse.urljoin(str(urlReq), '/') + issueText['link']
                                 
                                 self.mapTxtArea.append("\n" + fullURL)
+                                lh = [issueText['start'],issueText['end']]
                                 if issueText['link'] not in links:
                                     links += [issueText['link']]
+                                    if lh not in highlights:
+                                    	highlights += [lh]
+                                else:
+                                    if lh not in highlights:
+                                        highlights += [lh]
                             filNam = os.path.basename(issueText['link'])
                             if linkA.isNotBlank((filNam)):
                                 try:
@@ -263,15 +271,15 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
                             
                     issues = ArrayList()
                     if links != []:
-                        issues.add(SRI(ihrr, self.helpers, links))
+                        issues.add(SRI(ihrr, self.helpers, self.callbacks, links, highlights))
                     return issues
         except UnicodeEncodeError:
-            print ("Error in URL decode.")
+            self.callbacks.printOutput("Error in URL decode.")
         return None
     def consolidateDuplicateIssues(self, isb, isa):
         return -1
     def extensionUnloaded(self):
-        print "BurpJS LinkFinder v2 unloaded"
+        self.callbacks.printOutput("BurpJS LinkFinder v2 unloaded")
         return
 
     def mapMaps(self,event):
@@ -313,8 +321,8 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
         try:
             URL_HOST_SERVICE = self.helpers.buildHttpService(URL_HOSTNAME,URL_PORT,URL_PROTOCAL)
         except java.lang.IllegalArgumentException:
-            print("EXCEPTION BECAUSE HTTPSERVICE VALUES IS INVALID : {} : ".format(url))
-            print("EXCEPTION VALUES ARE :",URL_HOSTNAME,URL_PORT,URL_PROTOCAL)
+            self.callbacks.printOutput("EXCEPTION BECAUSE HTTPSERVICE VALUES IS INVALID : {} : ".format(url))
+            self.callbacks.printOutput("EXCEPTION VALUES ARE :",URL_HOSTNAME,URL_PORT,URL_PROTOCAL)
         return URL_SPLIT,URL_PROTOCAL,URL_HOSTNAME,URL_PORT,URL_HOST_FULL,URL_HOST_SERVICE
 
     def ProcessURL(self,url):
@@ -361,7 +369,8 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
 
 class linkAnalyse():
     
-    def __init__(self, reqres, helpers):
+    def __init__(self, reqres, callbacks, helpers):
+        self.callbacks = callbacks
         self.helpers = helpers
         self.reqres = reqres
         
@@ -401,10 +410,10 @@ class linkAnalyse():
     
     """     
 
-    def	parser_file(self, content, regex_str, mode=1, more_regex=None, no_dup=1):
+    def parser_file(self, content, regex_str, mode=1, more_regex=None, no_dup=1):
         #print ("TEST parselfile #2")
         regex = re.compile(regex_str, re.VERBOSE)
-        items = [{"link": m.group(1)} for m in re.finditer(regex, content)]
+        items = [{"link": m.group(1),"start":m.start(1),"end":m.end(1)} for m in re.finditer(regex, content)]
         if no_dup:
             # Remove duplication
             all_links = set()
@@ -461,8 +470,6 @@ class linkAnalyse():
                 return True
             #myString is None OR myString is empty or blank
         except:
-
-
             return False
 
     def valcheckUrl(self,myString,mapTxtArea):
@@ -474,20 +481,28 @@ class linkAnalyse():
                 return False
             
         except Exception as e:
-            print(myString + "\t" + str(e))
+            self.callbacks.printOutput(myString + "\t" + str(e))
             return True
 
         #print("Returning Default: " + myString)
         return True
 
 class SRI(IScanIssue,ITab):
-    def __init__(self, reqres, helpers, links):
+    def __init__(self, reqres, helpers, callbacks, links, highlights):
         self.helpers = helpers
-        self.reqres = reqres
+        self.callbacks = callbacks
+        
         self.links = links
         self.links.sort()
+        al = ArrayList()
+        i=0
+        while i<len(highlights):
+        	al.add(array([highlights[i][0],highlights[i][1]],'i'))
+        	i+=1
+        self.highlights = al
+        self.reqres = self.callbacks.applyMarkers(reqres,None,self.highlights)
         
-        self.issue_detail = "Burp Scanner has analysed this JS file and has discovered the following links: <br><ul>\n"
+        self.issue_detail = "Burp Scanner has analysed this JS file and has discovered the following link values: <br><ul>\n"
         i=0
     	while i<len(self.links):
     	    self.issue_detail += "<li>{}</li>\n".format(cgi.escape(self.links[i]))
