@@ -244,21 +244,25 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
                     self.outputTxtArea.append("\n" + "[+] Valid URL found: " + str(urlReq))
                     issueText = linkA.analyseURL()
                     links = []
+                    full_urls = []
                     highlights = []
                     for counter, issueText in enumerate(issueText):
                             self.outputTxtArea.append("\n" + "\t" + issueText['link'])
-                            if linkA.valcheckUrl(issueText['link'],self.mapTxtArea):
-                                fullURL = urlparse.urljoin(str(urlReq), '/') + issueText['link']
-                                
-                                self.mapTxtArea.append("\n" + fullURL)
-                                lh = [issueText['start'],issueText['end']]
-                                if issueText['link'] not in links:
-                                    links += [issueText['link']]
-                                    if lh not in highlights:
-                                    	highlights += [lh]
-                                else:
-                                    if lh not in highlights:
-                                        highlights += [lh]
+                            if linkA.valcheckFullURL(issueText['link']) and linkA.valcheckMappedList(issueText['link'],self.mapTxtArea):
+                                self.mapTxtArea.append("\n" + issueText['link'])
+                                full_urls += [issueText['link']]
+                            elif not linkA.valcheckFullURL(issueText['link']):
+                                fullURL = urlparse.urljoin(urlparse.urljoin(str(urlReq), '/'),issueText['link'])
+                                if linkA.valcheckMappedList(fullURL,self.mapTxtArea):
+                                    self.mapTxtArea.append("\n" + fullURL)
+                                full_urls += [fullURL]
+                            
+                            lh = [issueText['start'],issueText['end']]
+                            if issueText['link'] not in links:
+                                links += [issueText['link']]
+                            if lh not in highlights:
+                                highlights += [lh]
+                            
                             filNam = os.path.basename(issueText['link'])
                             if linkA.isNotBlank((filNam)):
                                 try:
@@ -271,7 +275,7 @@ class BurpExtender(IBurpExtender, IScannerCheck, ITab):
                             
                     issues = ArrayList()
                     if links != []:
-                        issues.add(SRI(ihrr, self.helpers, self.callbacks, links, highlights))
+                        issues.add(SRI(ihrr, self.helpers, self.callbacks, links, full_urls, highlights))
                     return issues
         except UnicodeEncodeError:
             self.callbacks.printOutput("Error in URL decode.")
@@ -472,43 +476,58 @@ class linkAnalyse():
         except:
             return False
 
-    def valcheckUrl(self,myString,mapTxtArea):
+    def valcheckMappedList(self,myString,mapTxtArea):
         #Checks if the extracted URL is a full URL or if already in the mapped list
         #print("Checking URL: " + myString)
         try:
-            if ("http" in myString) or (myString in mapTxtArea.text):
+            if (myString in mapTxtArea.text):
                 #print("Found HTTP in URL: " + myString)
                 return False
             
         except Exception as e:
             self.callbacks.printOutput(myString + "\t" + str(e))
             return True
-
+        
         #print("Returning Default: " + myString)
         return True
+    
+    def valcheckFullURL(self,myString):
+        try:
+            if (myString[:4].lower() == 'http'):
+                return True
+        except Exception as e:
+            self.callbacks.printOutput(myString + "\t" + str(e))
+        return False
 
 class SRI(IScanIssue,ITab):
-    def __init__(self, reqres, helpers, callbacks, links, highlights):
+    def __init__(self, reqres, helpers, callbacks, links, full_urls, highlights):
         self.helpers = helpers
         self.callbacks = callbacks
         
         self.links = links
         self.links.sort()
+        self.full_urls = full_urls
+        self.full_urls.sort()
+
         al = ArrayList()
         i=0
         while i<len(highlights):
-        	al.add(array([highlights[i][0],highlights[i][1]],'i'))
-        	i+=1
+            al.add(array([highlights[i][0],highlights[i][1]],'i'))
+            i+=1
         self.highlights = al
         self.reqres = self.callbacks.applyMarkers(reqres,None,self.highlights)
         
-        self.issue_detail = "Burp Scanner has analysed this JS file and has discovered the following link values: <br><ul>\n"
+        self.issue_detail = "Burp Scanner has analysed this JS file and has discovered the following link values: <ul>\n"
         i=0
-    	while i<len(self.links):
-    	    self.issue_detail += "<li>{}</li>\n".format(cgi.escape(self.links[i]))
-    	    i+=1
-    	self.issue_detail += "</ul>"
-    	self.issue_detail = str(self.issue_detail)
+        while i<len(self.links):
+            self.issue_detail += "<li>{}</li>\n".format(cgi.escape(self.links[i]))
+            i+=1
+        self.issue_detail += "</ul>The following full normalized URLs were generated from the discovered link values: <ul>\n"
+        i=0
+        while i<len(self.full_urls):
+            self.issue_detail += "<li>{}</li>\n".format(cgi.escape(self.full_urls[i]))
+            i+=1
+        self.issue_detail = str(self.issue_detail)
 
     def getHost(self):
         return self.reqres.getHost()
@@ -541,7 +560,7 @@ class SRI(IScanIssue,ITab):
         return None
 
     def getIssueDetail(self):
-    	return self.issue_detail
+        return self.issue_detail
 
     def getRemediationDetail(self):
         return None
