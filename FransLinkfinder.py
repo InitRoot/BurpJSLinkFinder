@@ -397,15 +397,21 @@ class linkAnalyse():
         |
     
         ([a-zA-Z0-9_\-/]{1,}/               # Relative endpoint with /
-        [a-zA-Z0-9_\-/]{1,}                 # Resource name
+        [a-zA-Z0-9_\-/.]{1,}                # Resource name
         \.(?:[a-zA-Z]{1,4}|action)          # Rest + extension (length 1-4 or action)
         (?:[\?|/][^"|']{0,}|))              # ? mark with parameters
     
         |
+
+        ([a-zA-Z0-9_\-/]{1,}/               # REST API (no extension) with /
+        [a-zA-Z0-9_\-/]{3,}                 # Proper REST endpoints usually have 3+ chars
+        (?:[\?|#][^"|']{0,}|))              # ? or # mark with parameters
+
+        |
     
         ([a-zA-Z0-9_\-]{1,}                 # filename
         \.(?:php|asp|aspx|jsp|json|
-             action|html|js|txt|xml)             # . + extension
+             action|html|js|txt|xml)        # . + extension
         (?:\?[^"|']{0,}|))                  # ? mark with parameters
     
       )
