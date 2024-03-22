@@ -1,5 +1,5 @@
 #  BurpJSLinkFinder - Find links within JS files.
-![Follow on Twitter](https://img.shields.io/twitter/follow/initroott?label=Follow%20&style=social)
+![Follow on Twitter](https://img.shields.io/twitter/follow/frans_initroot?label=Follow%20&style=social)
 ![GitHub last commit](https://img.shields.io/github/last-commit/initroot/BurpJSLinkFinder)
 ![GitHub stars](https://img.shields.io/github/stars/initroot/BurpJSLinkFinder)
 
